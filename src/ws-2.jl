@@ -29,48 +29,52 @@ tsk = @async run(Server(handler, wsh2),
 
 # close(msgc)
 
+##############################################################
 
-begin
+id = 200
+newid() = (global id ; id += 1 ; id)
 
-  put!(msgc, "et ta soeur")
-  put!(msgc, "Noemie va dans la douche")
-  put!(msgc, "<div style=\"color:red;margin: 10px 10px\"> azzzzzzzzzz </div>")
+##############################################################
 
-  put!(msgc,
-       String(Node(:div, "#tst",
-              Dict(:style=>"color:red"),
-              "ABCD")))
-
-  ob = Node(:div, "#tst",
-            Dict(:style=>"color:red"),
-            "ABCD")
-
-  ob.attrs
-  methodswith(typeof(ob))
-  fieldnames(ob)
-
-  Node(:div, "#tst", Dict(:style=>"color:green"),
-            "ABCD")
-end
-
-using Hiccup
 import JSON
 
 msg = Dict(:nid      => 1,
            :command => "append",
-           :payload => Dict(:nid => 23,
-                            :html => "old",
-                            :style => "color:green"))
+           :payload => Dict(:nid => newid(),
+                            :params => Dict(:html => "html text"),
+                            :compname => "html-node",
+                            :style  => "color:red"))
 
 put!(msgc, JSON.json(msg))
 
-msg2 = Dict(:nid     => 2,
+msg2 = Dict(:nid     => 212,
             :command => "append",
-            :payload => Dict(:nid => 21,
-                             :html => "newnew",
-                             :style => "color:purple"))
+            :payload => Dict(:nid => newid(),
+                             :params => Dict(:html => "inner html text"),
+                             :compname => "html-node" ) )
 
 put!(msgc, JSON.json(msg2))
+
+msg3 = Dict(:nid     => 1,
+            :command => "append",
+            :payload => Dict(:nid => newid(),
+                             :params => Dict(:msg => "test message"),
+                             :compname => "testcomp" ) )
+
+put!(msgc, JSON.json(msg3))
+
+
+
+id = 200
+newid() = (global id ; id += 1 ; id)
+
+newid()
+
+msg = Dict(:nid      => 1,
+           :command => "append",
+           :payload => Dict(:nid => newid(),
+                            :html => "<button type='button'>Click Me!</button>"))
+put!(msgc, JSON.json(msg))
 
 
 msg3 = Dict(:nid     => 1,
