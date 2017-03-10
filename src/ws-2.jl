@@ -64,6 +64,16 @@ msg3 = Dict(:nid     => 1,
 put!(msgc, JSON.json(msg3))
 
 
+msg4 = Dict(:nid     => 1,
+            :command => "append",
+            :payload => Dict(:nid => newid(),
+                             :params => Dict(:expr => "c = \\pm\\sqrt{a^2 + b^2}",
+                                             :options => Dict(:displayMode => true ) ),
+                             :compname => "katex" ) )
+
+put!(msgc, JSON.json(msg4))
+
+
 
 id = 200
 newid() = (global id ; id += 1 ; id)
