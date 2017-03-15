@@ -1,103 +1,16 @@
+reload("Rotolo")
 
+import Rotolo: @session, send
 
-immutable Session
-  channel::Channel{String}
-  port::Int
-end
+Rotolo.@session test
 
-sessions = Dict{String, Session}()
+using Base.Markdown
 
-import Base.send
-import JSON
+Rotolo.redirect(Base.Markdown.MD)
 
-function send(sid::String, nid::Int, command::String,
-              args::Dict{Symbol,Any})
-  msg = Dict{Symbol, Any}()
-  msg[:nid] = nid
-  msg[:command] = command
-  msg[:args] = args
+@session
 
-  if haskey(sessions, sid)
-    put!(sessions[sid].channel, JSON.json(msg))
-  else
-    error("[send] no session $sid registered")
-  end
-end
-
-macro session(args...)
-  sessionId = length(args)==0 ? randstring() : string(args[1])
-
-  if sessionId in keys(sessions) # already opened, just clear the page
-    send(sessionId, 0, "clear")
-  else # create page
-    xport, sock = listenany(5000) # find an available port
-    close(sock)
-    port = Int(xport)
-    chan = Channel{String}(10)
-    sessions[sessionId] = Session(chan, port)
-    launchServer(chan, port)
-    spinPage(sessionId, port)
-  end
-end
-
-using HttpServer
-using WebSockets
-
-function launchServer(chan::Channel, port::Int)
-
-  wsh = WebSocketHandler() do req,client
-    for m in chan
-      println("sending $m")  # msg = read(client)
-      write(client, m)
-    end
-    println("exiting send loop for port $port")
-  end
-
-  handler = HttpHandler() do req, res
-    rsp = Response(100)
-    rsp.headers["Access-Control-Allow-Origin"] =
-      "http://localhost:8080"
-    rsp.headers["Access-Control-Allow-Credentials"] =
-      "true"
-    rsp
-  end
-
-  @async run(Server(handler, wsh), port)
-end
-
-function spinPage(sname::String, port::Int)
-  sid = tempname()
-  tmppath = string(sid, ".html")
-  # scriptpath = joinpath(dirname(@__FILE__), "../client/build.js")
-  # scriptpath = "D:/frtestar/devl/paper-client/dist/build.js"
-  scriptpath = "/home/fred/Documents/Dropbox/devls/paper-client/dist/build.js"
-
-  open(tmppath, "w") do io
-    println(io,
-      """
-      <html>
-        <head>
-          <title>$sname</title>
-          <meta charset="UTF-8">
-          <script>
-            serverPort = '$port'
-          </script>
-        </head>
-        <body>
-          <script src='$scriptpath'></script>
-        </body>
-      </html>
-      """)
-  end
-
-  run(`xdg-open $tmppath`)
-  # run(`cmd /c start $tmppath`)
-end
-
-##################################################################
-
-
-@session test
+Rotolo.sessions
 
 send("test", 1, "append",
      Dict(:newnid => 101,
@@ -116,9 +29,15 @@ end
 
 Abcd("test")
 
-function show(io::IO, ::MIME"text/plain", x::Abcd)
+show(io::IO, ::MIME"text/plain",x::Abcd) = show(io, "Abcd : $(x.x)")
 
+function show(io::IO, x::Abcd)
+  show(io, "Abcd : $(x.x)")
 end
+
+show(Abcd("testtest"))
+
+methods(show, (IO, Abcd))
 
 
 strbuf = IOBuffer()
