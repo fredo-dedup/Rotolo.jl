@@ -1,8 +1,53 @@
+using Rotolo
+
+@session fromJuno
+
+@redirect Float64
+
+456.4
+
+import Media
+import Atom
+import Media: render
+
+@media MauritsThing
+setdisplay(MauritsThing, Rotolo.RotoloDisplay())
+
+media(Float64, Rotolo.RotoloDisplay)
+
+function Media.render(::Rotolo.RotoloDisplay, x::Float64)
+  Rotolo.send("append",
+       Dict(:newnid => Rotolo.getnid(),
+            :compname => "html-node",
+            :params => Dict(:html=> string(x) )))
+end
+
+
+show(4654.5)
+456.5
+
+Media.render(::)
+
+function rewire(func::Function, t::Type)
+  media(t, MauritsThing)
+  @eval function render(::MauritsDisplay, x::$t)
+        ($func)(x)
+        string(x)
+      end
+
+  @eval render(::Atom.Editor, x::$t) = render(md, x)
+
+end
+rewire(t::Type)  = rewire(addtochunk, t)
+
+
+
 reload("Rotolo")
 
+import Rotolo
 import Rotolo: @session, send
 
-Rotolo.@session test
+@session test
 
 using Base.Markdown
 
@@ -16,6 +61,10 @@ send("test", 1, "append",
      Dict(:newnid => 101,
           :compname => "html-node",
           :params => Dict(:html=>"hello from Julia")))
+
+
+
+
 
 using Base.Markdown
 
