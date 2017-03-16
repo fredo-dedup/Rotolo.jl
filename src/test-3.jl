@@ -1,80 +1,82 @@
+reload("Rotolo")
 
-sessions = Dict{String, Channel{String}}()
-
-import Base.send
-import JSON
-
-function send(sid::String, nid::Int, command::String; args...)
-  msg = Dict{Symbol, Any}()
-  msg[:nid] = nid
-  msg[:command] = command
-  for (k,v) in args
-    msg[k] = v
-  end
-  println(JSON.json(msg))
-  if haskey(sessions, sid)
-    put!(sessions[sid], JSON.json(msg))
-  else
-    error("[send] no session $sid registered")
-  end
+module Try
 end
 
-msgc = Channel{String}(5)
+module Try
+using Rotolo
 
-sessions["abcd"] = msgc
+using Base.Markdown
 
-send("abcd", 1, "append", newnid=3, params=Dict(:html => "coucou"))
+@redirect Float32 Base.Markdown.MD
 
+@session abcd11
 
-@async (m = take!(msgc) ; println(m))
+Rotolo._send(Rotolo.currentSession, 0,
+             "load", Dict{Symbol,Any}(:assetname => "katex",
+                          :assetpath => "D:/frtestar/.julia/v0.5/Rotolo/client/katex/katex.js"))
 
-@async (for m in msgc ; println(m) ; end ; println("out of loop"))
-put!(msgc, "helloooo")
-close(msgc)
-
-#find open port
-port, sock = listenany(5000) # find an available port
-close(sock)
-serverid = @async serve(static, comm, port)
-Int(port)
-
-put!(msgc, JSON.json(msg))
-macro session(args...)
-  sessionId = length(args)==0 ? randstring() : string(args[1])
-
-  if sessionId in keys(sessions) # already opened, just clear the page
-    send(sessionId, 0, "clear")
-  else # create page
+Rotolo.send("append",
+     Dict(:newnid => Rotolo.getnid(),
+          :compname => "katex",
+          :params => Dict(:expr => "x^2+y_x=a")))
 
 
+Rotolo._send(Rotolo.currentSession, 0,
+             "load", Dict{Symbol,Any}(:assetname => "vegalite",
+                          :assetpath => "./vegalite.js"))
 
+D:/frtestar/.julia/v0.5/Rotolo/client/katex/ka
+D:\frtestar\devl\paper-client\dist
+
+
+Rotolo.send("append",
+     Dict(:newnid => Rotolo.getnid(),
+          :compname => "vegalite",
+          :params => Dict(:expr => "x^2+y_x=a")))
+
+
+
+456.4
+Float32(456.54)
+
+# import Media, Atom
+# methods(Media.render, (Atom.Editor, Any))
+
+md"""
+  markdown Text
+  # titleqsdqsd
+
+  qsdfdf
+  - qsdfgqdg
+  - dfgqdrg
+
+  ```
+  code_llvm
+  ```
+
+  text *text*  qsdf  **qdfgqf**
+  """
+
+
+
+
+using Base.Markdown
+
+str = md"test **test** test"
+typeof(str)
+methodswith(Markdown.MD)
+
+type Abcd
+  x::String
 end
 
-string(45.6)
+Abcd("test")
 
-sid = tempname()
-tmppath = string(sid, ".rotolo.html")
-scriptpath = joinpath(dirname(@__FILE__), "../client/build.js")
-scriptpath = "D:/frtestar/devl/paper-client/dist/build.js"
+show(io::IO, ::MIME"text/plain",x::Abcd) = show(io, "Abcd : $(x.x)")
 
-open(tmppath, "w") do io
-  title = basename(sid)
-  println(io,
-    """
-    <html>
-      <head>
-        <title>$title</title>
-        <meta charset="UTF-8">
-        <script>
-          sessionId = '$sid'
-          serverPort = '$(Int(port))'
-        </script>
-        <script src='$scriptpath'></script>
-      </head>
-      <body></body>
-    </html>
-    """)
+function show(io::IO, x::Abcd)
+  show(io, "Abcd : $(x.x)")
 end
 
-run(`xdg-open $tmppath`)
-run(`cmd /c start $tmppath`)
+show(Abcd("testtest"))
