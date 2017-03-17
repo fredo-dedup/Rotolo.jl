@@ -1,12 +1,9 @@
 // import katex from './katex.min.js'
 // require("https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css")
 
-export default {
+define( {
+  name: 'vegalite',
+  template: '"<div>hello vegalite</div>',
+  props: ['params', 'nid']
 
-  props: ['params', 'nid'],
-
-  render: function(createElement) {
-    return createElement('span', { domProps: { innerHTML: "abcd" } })
-  }
-
-}
+} )
