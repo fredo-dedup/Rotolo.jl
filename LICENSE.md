@@ -1,4 +1,4 @@
-The SideWindow.jl package is licensed under the MIT "Expat" License:
+The Rotolo.jl package is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2017: fredo.
 > 

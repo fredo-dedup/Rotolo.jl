@@ -1,4 +1,4 @@
-using SideWindow
+using Rotolo
 using Base.Test
 
 # write your own tests here

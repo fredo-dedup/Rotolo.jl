@@ -7,10 +7,6 @@ define(["./katex.min.js"],
     link.href = "https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css";
     document.getElementsByTagName("head")[0].appendChild(link);
 
-    // var css = document.createElement("style");
-    // css.text = katexcss;
-    // document.getElementsByTagName("head")[0].appendChild(link);
-
     return {
 
       props: ['params', 'nid'],
