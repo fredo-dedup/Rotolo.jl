@@ -10,12 +10,27 @@ using Base.Markdown
 
 @redirect Float32 Base.Markdown.MD
 
-@session abcd26
+@session c3
+
+Rotolo._send(Rotolo.currentSession, 0,
+             "load",
+             Dict{Symbol,Any}(:assetname => "katex",
+                              # :assetpath => "D:/frtestar/.julia/v0.5/Rotolo/client/katex/katex.js",
+                              :assetpath => "/home/fred/.julia/v0.5/Rotolo/client/katex/katex.js")
+            )
+
+Rotolo.send("append",
+     Dict(:newnid => Rotolo.getnid(),
+          :compname => "katex",
+          :params => Dict(:expr => "x^2+y_x=a")))
+
+###############################
 
 Rotolo._send(Rotolo.currentSession, 0,
              "load",
              Dict{Symbol,Any}(:assetname => "vegalite",
-                              :assetpath => "D:/frtestar/.julia/v0.5/Rotolo/client/vegalite/vegalite.js")
+            #  :assetpath => "D:/frtestar/.julia/v0.5/Rotolo/client/vegalite/vegalite.js")
+             :assetpath => "/home/fred/.julia/v0.5/Rotolo/client/VegaLite/vegalite.js")
             )
 
 Rotolo.send("append",
@@ -29,9 +44,8 @@ Rotolo.send("append",
 Rotolo._send(Rotolo.currentSession, 0,
              "load",
              Dict{Symbol,Any}(:assetname => "katex",
-                              :assetpath => "D:/frtestar/.julia/v0.5/Rotolo/client/katex/katex.js",
-                              :assetfile => "/katex.js",
-                              :assetdir  => "D:/frtestar/.julia/v0.5/Rotolo/client/katex")
+                              # :assetpath => "D:/frtestar/.julia/v0.5/Rotolo/client/katex/katex.js",
+                              :assetpath => "/home/fred/.julia/v0.5/Rotolo/client/katex/katex.js")
             )
 
 Rotolo.send("append",
@@ -83,7 +97,6 @@ md"""
 
   text *text*  qsdf  **qdfgqf**
   """
-
 
 
 

@@ -81,9 +81,10 @@ function spinPage(sname::String, port::Int)
   sid = tempname()
   tmppath = string(sid, ".html")
   # scriptpath = joinpath(dirname(@__FILE__), "../client/build.js")
-  scriptpath = "D:/frtestar/devl/paper-client/dist/build.js"
-  # scriptpath = "/home/fred/Documents/Dropbox/devls/paper-client/dist/build.js"
+  # scriptpath = "D:/frtestar/devl/paper-client/dist/build.js"
+  scriptpath = "/home/fred/Documents/Dropbox/devls/paper-client/dist/build.js"
   requirepath = joinpath(dirname(@__FILE__), "../client/require.js")
+  requiretextpath = joinpath(dirname(@__FILE__), "../client/require-text.js")
 
   open(tmppath, "w") do io
     println(io,
@@ -93,7 +94,6 @@ function spinPage(sname::String, port::Int)
           <title>$sname</title>
           <meta charset="UTF-8">
           <script src='$requirepath'></script>
-
           <script>
             serverPort = '$port'
           </script>
