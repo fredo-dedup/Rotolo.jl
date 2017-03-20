@@ -12,6 +12,44 @@ using Base.Markdown
 
 @session c3
 
+cs = Rotolo.currentSession
+function xplore(ct, level=0)
+  println(" "^level, ct.name, " ($(ct.nid))")
+  for c in ct.subcontainers
+    xplore(c, level+2)
+  end
+end
+xplore(cs.root_container)
+
+cs.active_container.name
+
+Rotolo.@container abcd
+
+Rotolo.@container cyz
+
+Rotolo.@container abcd.yo
+
+md"test"
+Float32(123)
+
+using DataFrames
+@redirect DataFrame
+DataFrames.head(Main.comp)
+
+
+
+Rotolo.unfold(:(abcd.yo))
+
+macro test(arg)
+  dump(arg)
+  println(Rotolo.unfold(arg))
+end
+
+@test abcd
+@test abcd.youi.yo456
+
+#################################################################################
+
 Rotolo._send(Rotolo.currentSession, 0,
              "load",
              Dict{Symbol,Any}(:assetname => "katex",

@@ -4,9 +4,15 @@ type Session
   channel::Channel{String}
   port::Int
   nid_counter::Int
-  active_container::Int
+  root_container::Container
+  active_container::Container
 end
-Session(channel, port) = Session(channel, port, 1, 1)
+
+function Session(channel, port)
+  # root container has nid = 1 and name "root"
+  ct = Container(1, :root)
+  Session(channel, port, 1, ct, ct)
+end
 
 function getnid()
   currentSession.nid_counter += 1
@@ -18,7 +24,7 @@ sessions = Dict{String, Session}()
 function send(command::String, args::Dict{Symbol,Any}=Dict{Symbol,Any}())
   if isdefined(Rotolo, :currentSession)
     _send(currentSession,
-          currentSession.active_container,
+          currentSession.active_container.nid,
           command, args)
   else
     error("[send] no active session")
@@ -80,9 +86,9 @@ end
 function spinPage(sname::String, port::Int)
   sid = tempname()
   tmppath = string(sid, ".html")
-  # scriptpath = joinpath(dirname(@__FILE__), "../client/build.js")
+  scriptpath = joinpath(dirname(@__FILE__), "../client/build.js")
   # scriptpath = "D:/frtestar/devl/paper-client/dist/build.js"
-  scriptpath = "/home/fred/Documents/Dropbox/devls/paper-client/dist/build.js"
+  # scriptpath = "/home/fred/Documents/Dropbox/devls/paper-client/dist/build.js"
   requirepath = joinpath(dirname(@__FILE__), "../client/require.js")
 
   open(tmppath, "w") do io
