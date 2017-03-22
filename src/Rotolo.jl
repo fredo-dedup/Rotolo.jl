@@ -15,6 +15,6 @@ include("session.jl")
 @require Atom include("atom_integration.jl")
 
 export display, @redirect
-export @session
+export @session, @container
 
 end # module

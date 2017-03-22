@@ -21,7 +21,7 @@ end
 
 sessions = Dict{String, Session}()
 
-function send(command::String, args::Dict{Symbol,Any}=Dict{Symbol,Any}())
+function send(command::String, args::Dict=Dict())
   if isdefined(Rotolo, :currentSession)
     _send(currentSession,
           currentSession.active_container.nid,
@@ -32,7 +32,7 @@ function send(command::String, args::Dict{Symbol,Any}=Dict{Symbol,Any}())
 end
 
 function _send(session::Session, nid::Int, command::String,
-               args::Dict{Symbol,Any}=Dict{Symbol,Any}())
+               args::Dict=Dict())
   msg = Dict{Symbol, Any}()
   msg[:nid] = nid
   msg[:command] = command

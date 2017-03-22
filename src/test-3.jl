@@ -10,7 +10,7 @@ using Base.Markdown
 
 @redirect Float32 Base.Markdown.MD
 
-@session c3
+@session c4
 
 cs = Rotolo.currentSession
 function xplore(ct, level=0)
@@ -19,18 +19,29 @@ function xplore(ct, level=0)
     xplore(c, level+2)
   end
 end
+
 xplore(cs.root_container)
 
-cs.active_container.name
+@container abcd
+xplore(cs.root_container)
 
-Rotolo.@container abcd
+@container cyz
+xplore(cs.root_container)
 
-Rotolo.@container cyz
+@container
+xplore(cs.root_container)
 
 Rotolo.@container abcd.yo
+xplore(cs.root_container)
 
 md"test"
 Float32(123)
+
+Rotolo.@container abcd.yourk style=>"font-color:red"
+xplore(cs.root_container)
+
+md"test"
+
 
 using DataFrames
 @redirect DataFrame

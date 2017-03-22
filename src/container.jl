@@ -10,44 +10,44 @@ Container(nid::Int, name::Symbol,
           parent::Nullable{Container}=Nullable{Container}()) =
   Container(nid, name, parent, Container[])
 
+function newcontainer(name::Symbol, parent::Container,
+                      opts::Dict=Dict())
+  nid = getnid()
+  nct = Container(nid, name, Nullable(parent))
+
+  args = merge(opts,
+               Dict(:newnid => nid,
+                    :compname => "html-node",
+                    :params => Dict(:html=>"")))
+
+  _send(currentSession, parent.nid, "append", args)
+
+  push!(parent.subcontainers, nct)
+  nct
+end
+
 # walk the container tree, creating containers along the way
 # if they do not exist
-function findorcreate(ct::Container, path::Vector{Symbol})
-  nn = path[1]
+function findorcreate(ct::Container, path::Vector{Symbol},
+                      opts::Dict)
+  nn = shift!(path)
   ict = findfirst(e -> e.name == nn, ct.subcontainers)
-  if length(path) == 1 # we are at the leaf node
+  if length(path) == 0 # we are at the leaf node
     if ict == 0  # no container with this name => create
-      nid = getnid()
-      nct = Container(nid, nn, Nullable(ct))
-      _send(currentSession, ct.nid, "append",
-            Dict(:newnid => nid,
-                 :compname => "html-node",
-                 :params => Dict(:html=>"")))
-      push!(ct.subcontainers, nct)
+      nct = newcontainer(nn, ct, opts) # apply opts only on leaf
     else # container exists => clear
       nct = ct.subcontainers[ict]
       _send(currentSession, nct.nid, "clear")
     end
     nct
-
   else
-    if ict == 0  # no container with this name => create
-      nid = getnid()
-      nct = Container(nid, nn, Nullable(ct))
-      _send(currentSession, ct.nid, "append",
-            Dict(:newnid => nid,
-                 :compname => "html-node",
-                 :params => Dict(:html=>"")))
-      push!(ct.subcontainers, nct)
-      findorcreate(nct, path[2:end])
-    else
-      findorcreate(ct.subcontainers[ict], path[2:end])
-    end
+    nct = ict == 0 ? newcontainer(nn, ct) : ct.subcontainers[ict]
+    findorcreate(nct, path, opts)
   end
 end
 
 macro container(args...)
-  name = (randstring(),)
+  name = [Symbol(randstring())]
   opts = Dict()
   for a in args
     nt = unfold(a) # try to interpret as container name path
@@ -61,7 +61,7 @@ macro container(args...)
   end
 
   # create or clear container identified by its path in `name`
-  nct = findorcreate(currentSession.root_container, name)
+  nct = findorcreate(currentSession.root_container, name, opts)
   currentSession.active_container = nct
 end
 
