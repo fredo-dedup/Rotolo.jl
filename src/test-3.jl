@@ -10,7 +10,9 @@ using Base.Markdown
 
 @redirect Float32 Base.Markdown.MD
 
-@session c4
+Rotolo.sessions
+
+@session d1
 
 cs = Rotolo.currentSession
 function xplore(ct, level=0)
@@ -168,3 +170,67 @@ function show(io::IO, x::Abcd)
 end
 
 show(Abcd("testtest"))
+
+
+############################################################
+
+Pkg.build("Rotolo")
+
+p = ccall((:nlopt_create,libnlopt), _Opt, (Cenum, Cuint),
+          algorithm, n)
+
+lpath = "D:/frtestar/.julia/v0.5/Rotolo/deps/usr/lib/wkhtmltox.dll"
+libwk = Libdl.dlopen(lpath, Libdl.RTLD_LAZY)
+
+lpath = "C:/HOMEWARE/julia/Julia-0.5.0/bin/libgmp.dll"
+libwk = Libdl.dlopen(lpath, Libdl.RTLD_LAZY)
+
+import Rotolo
+typeof(Rotolo.libwkhtml)
+
+
+##############################################################
+
+include("wkhtmltox.jl")
+
+vers = ccall((:wkhtmltopdf_version, libwkhtml), Cstring, ())
+unsafe_string(vers)
+
+init(0)
+
+gs = create_global_settings()
+
+set_global_setting(gs, "out", "c:\\temp\\example.pdf")
+get_global_setting(gs, "out")
+
+set_global_setting(gs, "out", "c:\\temp\\example.png")
+get_global_setting(gs, "out")
+
+
+
+get_global_setting(gs, "resolution")
+get_global_setting(gs, "orientation")
+get_global_setting(gs, "margin.top")
+
+get_global_setting(gs, "smartWidth")
+
+
+
+os = create_object_settings()
+set_object_setting(os, "page", "c:\\temp\\example.html")
+get_object_setting(os, "page")
+
+conv = create_converter(gs)
+
+add_object(conv, os, C_NULL);
+
+wkconvert(conv)
+
+# wkhtmltopdf_set_progress_changed_callback(c, progress_changed);
+# wkhtmltopdf_set_phase_changed_callback(c, phase_changed);
+# wkhtmltopdf_set_error_callback(c, error);
+# wkhtmltopdf_set_warning_callback(c, warning);
+
+destroy_converter(conv);
+
+deinit();
