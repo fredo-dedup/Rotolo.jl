@@ -143,6 +143,9 @@ Rotolo.send("append",
 
 
 
+dump(:( ~test ))
+
+
 456.4
 Float32(456.54)
 

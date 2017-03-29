@@ -1,4 +1,6 @@
 global currentSession
+global isDisplayed::Bool = true
+
 
 type Session
   channel::Channel{String}
@@ -62,7 +64,6 @@ macro session(args...)
 end
 
 function launchServer(chan::Channel, port::Int)
-
   wsh = WebSocketHandler() do req,client
     for m in chan
       println("sending $m")  # msg = read(client)
@@ -83,7 +84,7 @@ function launchServer(chan::Channel, port::Int)
   @async run(Server(handler, wsh), port)
 end
 
-function spinPage(sname::String, port::Int)
+function createPage(sname::String, port::Int)
   sid = tempname()
   tmppath = string(sid, ".html")
   scriptpath = joinpath(dirname(@__FILE__), "../client/build.js")
@@ -111,18 +112,21 @@ function spinPage(sname::String, port::Int)
       """)
   end
 
+  tmppath
+end
+
+function openBrowser(pagePath::String)
   @static if VERSION < v"0.5.0-"
-    @osx_only run(`open $tmppath`)
-    @windows_only run(`cmd /c start $tmppath`)
-    @linux_only   run(`xdg-open $tmppath`)
+    @osx_only run(`open $pagePath`)
+    @windows_only run(`cmd /c start $pagePath`)
+    @linux_only   run(`xdg-open $pagePath`)
   else
     if is_apple()
-      run(`open $tmppath`)
+      run(`open $pagePath`)
     elseif is_windows()
-      run(`cmd /c start $tmppath`)
+      run(`cmd /c start $pagePath`)
     elseif is_linux()
-      run(`xdg-open $tmppath`)
+      run(`xdg-open $pagePath`)
     end
   end
-
 end
