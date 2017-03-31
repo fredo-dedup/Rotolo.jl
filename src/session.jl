@@ -1,6 +1,6 @@
 global currentSession
-global isDisplayed::Bool = true
-
+global isDisplayed = true
+global sessions = Dict{String, Session}()
 
 type Session
   channel::Channel{String}
@@ -8,12 +8,12 @@ type Session
   nid_counter::Int
   root_container::Container
   active_container::Container
+  page_file::String
 end
 
-function Session(channel, port)
-  # root container has nid = 1 and name "root"
-  ct = Container(1, :root)
-  Session(channel, port, 1, ct, ct)
+function Session(channel, port, page_file, opts)
+  ct = Container(1, :root, opts) # root container has nid = 1 and name "root"
+  Session(channel, port, 1, ct, ct, page_file)
 end
 
 function getnid()
@@ -21,32 +21,46 @@ function getnid()
   currentSession.nid_counter
 end
 
-sessions = Dict{String, Session}()
+
+
+
 
 function send(command::String, args::Dict=Dict())
-  if isdefined(Rotolo, :currentSession)
-    _send(currentSession,
-          currentSession.active_container.nid,
-          command, args)
-  else
-    error("[send] no active session")
-  end
+  isdefined(Rotolo, :currentSession) || error("[send] no active session")
+
+  _send(currentSession,
+        currentSession.active_container.nid,
+        command, args)
 end
 
 function _send(session::Session, nid::Int, command::String,
                args::Dict=Dict())
-  msg = Dict{Symbol, Any}()
-  msg[:nid] = nid
-  msg[:command] = command
-  msg[:args] = args
+  msg = Dict{Symbol, Any}(:nid     => nid,
+                          :command => command,
+                          :args    => args)
 
   put!(session.channel, JSON.json(msg))
 end
 
+
+
+
 macro session(args...)
   global currentSession
 
-  sessionId = length(args)==0 ? randstring() : string(args[1])
+  sessionId = randstring()
+  opts = Dict()
+  for a in args
+    if isa(a, String)
+      sessionId = a
+    elseif isa(a, Symbol)
+      sessionId = string(a)
+    elseif isa(a, Expr) && a.head == :(=>)
+      opts[a.args[1]] = a.args[2]
+    else
+      error("cannot parse argument '$a'")
+    end
+  end
 
   if sessionId in keys(sessions) # already opened, just clear the page
     _send(sessions[sessionId], 1, "clear")
@@ -56,9 +70,10 @@ macro session(args...)
     close(sock)
     port = Int(xport)
     chan = Channel{String}(10)
-    sessions[sessionId] = Session(chan, port)
     launchServer(chan, port)
-    spinPage(sessionId, port)
+    pagePath = createPage(sessionId, port)
+    sessions[sessionId] = Session(chan, port, pagePath, opts)
+    isDisplayed && openBrowser(pagePath)
   end
   currentSession = sessions[sessionId]
 end

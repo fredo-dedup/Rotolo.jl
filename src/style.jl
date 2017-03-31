@@ -18,3 +18,5 @@ function style(obj, styl::String="")
   send("append", args)
   nothing
 end
+
+macro style(obj, args)
