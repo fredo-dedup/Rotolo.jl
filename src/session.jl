@@ -8,12 +8,12 @@ type Session
   nid_counter::Int
   root_container::Container
   active_container::Container
-  page_file::String
+  filename::String
 end
 
-function Session(channel, port, page_file, opts)
+function Session(channel, port, filename, opts)
   ct = Container(1, :root, opts) # root container has nid = 1 and name "root"
-  Session(channel, port, 1, ct, ct, page_file)
+  Session(channel, port, 1, ct, ct, filename)
 end
 
 function getnid()
@@ -22,11 +22,8 @@ function getnid()
 end
 
 
-
-
-
 function send(command::String, args::Dict=Dict())
-  isdefined(Rotolo, :currentSession) || error("[send] no active session")
+  isdefined(:currentSession) || error("[send] no active session")
 
   _send(currentSession,
         currentSession.active_container.nid,
@@ -89,10 +86,8 @@ function launchServer(chan::Channel, port::Int)
 
   handler = HttpHandler() do req, res
     rsp = Response(100)
-    rsp.headers["Access-Control-Allow-Origin"] =
-      "http://localhost:8080"
-    rsp.headers["Access-Control-Allow-Credentials"] =
-      "true"
+    rsp.headers["Access-Control-Allow-Origin"] = "http://localhost:8080"
+    rsp.headers["Access-Control-Allow-Credentials"] = "true"
     rsp
   end
 
@@ -115,9 +110,7 @@ function createPage(sname::String, port::Int)
           <title>$sname</title>
           <meta charset="UTF-8">
           <script src='$requirepath'></script>
-          <script>
-            serverPort = '$port'
-          </script>
+          <script> serverPort = '$port' </script>
         </head>
         <body>
           <div id="app"></div>
