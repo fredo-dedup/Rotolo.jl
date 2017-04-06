@@ -11,7 +11,20 @@ type Session
   filename::String
 end
 
-function Session(channel, port, filename, opts)
+function Session(sessionId)
+  # find an available port
+  xport, sock = listenany(5000)
+  close(sock)
+  port = Int(xport)
+  # create Channel for message queue
+  chan = Channel{String}(10)
+
+  launchServer(chan, port)
+  filename = createPage(sessionId, port)
+
+  sessions[sessionId] = Session(chan, port, pagePath, opts)
+  isDisplayed && openBrowser(pagePath)
+
   ct = Container(1, :root, opts) # root container has nid = 1 and name "root"
   Session(channel, port, 1, ct, ct, filename)
 end
@@ -22,45 +35,24 @@ function getnid()
 end
 
 
-function send(command::String, args::Dict=Dict())
-  isdefined(:currentSession) || error("[send] no active session")
-
-  _send(currentSession,
-        currentSession.active_container.nid,
-        command, args)
-end
-
-function _send(session::Session, nid::Int, command::String,
-               args::Dict=Dict())
-  msg = Dict{Symbol, Any}(:nid     => nid,
-                          :command => command,
-                          :args    => args)
-
-  put!(session.channel, JSON.json(msg))
-end
-
-
 
 
 macro session(args...)
   global currentSession
 
+  others, opts = parseargs(args...)
+
   sessionId = randstring()
-  opts = Dict()
-  for a in args
-    if isa(a, String)
-      sessionId = a
-    elseif isa(a, Symbol)
-      sessionId = string(a)
-    elseif isa(a, Expr) && a.head == :(=>)
-      opts[a.args[1]] = a.args[2]
-    else
-      error("cannot parse argument '$a'")
+  if length(others) > 0
+    if isa(others[1], String)
+      sessionId = others[1]
+    elseif isa(others[1], Symbol)
+      sessionId = string(others[1])
     end
   end
 
   if sessionId in keys(sessions) # already opened, just clear the page
-    _send(sessions[sessionId], 1, "clear")
+    send(sessions[sessionId], 1, "clear", opts)
 
   else # create page
     xport, sock = listenany(5000) # find an available port
