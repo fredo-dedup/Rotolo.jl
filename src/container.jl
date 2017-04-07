@@ -5,24 +5,17 @@ type Container
   subcontainers::Dict{Symbol,Container}
 end
 
-# Container(nid::Int, name::Symbol,
-#           parent::Nullable{Container}=Nullable{Container}()) =
-#   Container(nid, name, parent, Container[])
-
-Container(parent::Container, opts::Dict=Dict()) =
-  Container(Nullable(parent), opts)
-
-function Container(parent::Nullable{Container}, opts::Dict=Dict())
+# Simplified constructor for usual cases (i.e. not the root container)
+function Container(parent::Container, opts::Dict=Dict())
   nid = getnid()
-  nct = Container(nid, parent, Dict{Symbol,Container}())
+  nct = Container(nid, Nullable(parent), Dict{Symbol,Container}())
 
   args = merge(opts,
                Dict(:newnid => nid,
                     :compname => "html-node",
                     :params => Dict(:html=>"")))
 
-  pid = isnull(parent) ? 1 : parent.nid
-  send(currentSession, pid, "append", args)
+  send(currentSession, parent.nid, "append", args)
 
   nct
 end

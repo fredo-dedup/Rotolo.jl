@@ -14,10 +14,10 @@ function parseargs(args...)
     if isa(a, Expr) && a.head == :(=>) && isa(a.args[1],Symbol)
       opts[string(a.args[1])] = tostring(a.args[2])
     else
-      push!(others,a)
+      push!(others,string(a))
     end
   end
-  (opts, others)
+  (others, opts)
 end
 
 function tostring(a)
@@ -58,7 +58,7 @@ end
 
 
 function sendcurrent(command::String, args::Dict=Dict())
-  isdefined(:currentSession) || error("[send] no active session")
+  isdefined(Rotolo, :currentSession) || error("[send] no active session")
 
   send(currentSession,
        currentSession.active_container.nid,

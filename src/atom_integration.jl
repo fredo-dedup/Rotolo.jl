@@ -42,10 +42,10 @@ macro redirect(args...)
 
         str = ($sfunc)(x)
 
-        send("append",
-             Dict(:newnid => getnid(),
-                  :compname => "html-node",
-                  :params => Dict(:html=>str)))
+        sendcurrent("append",
+                    Dict(:newnid => getnid(),
+                         :compname => "html-node",
+                         :params => Dict(:html=>str)))
 
         nothing
       end

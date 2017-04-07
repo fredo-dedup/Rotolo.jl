@@ -1,6 +1,3 @@
-global currentSession
-global isDisplayed = true
-global sessions = Dict{String, Session}()
 
 type Session
   channel::Channel{String}
@@ -16,25 +13,25 @@ function Session(sessionId)
   xport, sock = listenany(5000)
   close(sock)
   port = Int(xport)
-  # create Channel for message queue
-  chan = Channel{String}(10)
 
-  launchServer(chan, port)
+  chan = Channel{String}(10) # create Channel for message queue
+
+  launchServer(chan, port) # launch communication server
   filename = createPage(sessionId, port)
 
-  sessions[sessionId] = Session(chan, port, pagePath, opts)
-  isDisplayed && openBrowser(pagePath)
+  # Since container #1 already exists in the Vuejs client, no need to send
+  # message to create the web component. Hence the Container constructor function
+  # should not be called, only the plain type constructor.
+  # root container has nid = 1 and no parent
+  ct = Container(1, Nullable{Container}(), Dict{Symbol,Container}())
 
-  ct = Container(1, :root, opts) # root container has nid = 1 and name "root"
-  Session(channel, port, 1, ct, ct, filename)
+  Session(chan, port, 1, ct, ct, filename)
 end
 
 function getnid()
   currentSession.nid_counter += 1
   currentSession.nid_counter
 end
-
-
 
 
 macro session(args...)
@@ -50,19 +47,15 @@ macro session(args...)
       sessionId = string(others[1])
     end
   end
+  println(sessionId)
 
   if sessionId in keys(sessions) # already opened, just clear the page
     send(sessions[sessionId], 1, "clear", opts)
 
-  else # create page
-    xport, sock = listenany(5000) # find an available port
-    close(sock)
-    port = Int(xport)
-    chan = Channel{String}(10)
-    launchServer(chan, port)
-    pagePath = createPage(sessionId, port)
-    sessions[sessionId] = Session(chan, port, pagePath, opts)
-    isDisplayed && openBrowser(pagePath)
+  else # create page, launch server, etc.
+    ns = Session(sessionId)
+    sessions[sessionId] = ns
+    isDisplayed && openBrowser(ns.filename)
   end
   currentSession = sessions[sessionId]
 end
