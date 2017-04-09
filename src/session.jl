@@ -37,14 +37,14 @@ end
 macro session(args...)
   global currentSession
 
-  others, opts = parseargs(args...)
+  objects, opts = parseargs(args...)
 
   sessionId = randstring()
-  if length(others) > 0
-    if isa(others[1], String)
-      sessionId = others[1]
-    elseif isa(others[1], Symbol)
-      sessionId = string(others[1])
+  if length(objects) > 0
+    if isa(objects[1], String)
+      sessionId = objects[1]
+    elseif isa(objects[1], Symbol)
+      sessionId = string(objects[1])
     end
   end
   println(sessionId)

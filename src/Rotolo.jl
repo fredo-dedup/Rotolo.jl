@@ -13,6 +13,7 @@ include("style.jl")
 include("container.jl")
 include("session.jl")
 include("utils.jl")
+include("showmsg.jl")
 
 @require Atom include("atom_integration.jl")
 

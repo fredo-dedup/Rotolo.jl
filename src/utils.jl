@@ -1,30 +1,30 @@
 """
 `parseargs(args...)` parses arguments of `@container`, `@session` and
 `@style`. Arguments of type Pair are returned in a dictionnary
-Dict{String,String}. Other arguments are returned as is.
+Dict{String,String}. Other arguments are returned as strings.
 
 ##arguments
 - `args...` : arguments as provided by the macro
 
 """
 function parseargs(args...)
-  others = String[]
+  objects = []
   opts = Dict{String,String}()
   for a in args
     if isa(a, Expr) && a.head == :(=>) && isa(a.args[1],Symbol)
       opts[string(a.args[1])] = tostring(a.args[2])
     else
-      push!(others,string(a))
+      push!(objects,a)
     end
   end
-  (others, opts)
+  (objects, opts)
 end
 
 function tostring(a)
   isa(a, String) && return a
   # isa(a, Symbol) && return string(a)
   try
-    sa = eval(a)
+    sa = eval(current_module(), a)
     isa(sa, String) && return sa
     throw()
   catch
@@ -37,20 +37,25 @@ end
 `unfold(e)` transforms expressions `:(sym1.sym2.sym3)` into a tuple of symbols
 `[:sym1, :sym2, :sym3]`.
 """
-unfold(ex::Any) = NTuple()
-unfold(ex::Symbol) = [ex]
+unfold(ex::Any) = Symbol[]
+unfold(ex::Symbol) = Symbol[ex]
+unfold(ex::String) = Symbol[Symbol(ex)]
+unfold(ex::QuoteNode) = Symbol[ex.value]
 function unfold(ex::Expr)
-  ex.head != :. && return Symbol[]
-  lexpr = unfold(ex.args[1])
-  length(lexpr) == 0 && return Symbol[]
-  push!(lexpr, ex.args[2].args[1])
-  lexpr
+  if ex.head == :.
+    lexpr = unfold(ex.args[1])
+    rexpr = unfold(ex.args[2])
+    length(lexpr)!=0 || length(rexpr)!=0 || return Symbol[]
+    vcat(lexpr,rexpr)
+  elseif ex.head == :quote
+    Symbol[ex.args[1]]
+  else
+    Symbol[]
+  end
 end
 
 # ex = :(abcd.qsdf.sd)
 # res = unfold(:(abcd.qsdf.sd))
-# tuple(res...)
-# res[1:end-1]
 # unfold(:( aze-45 ))
 # unfold(:( aze=45 ))
 # unfold(:( aze => abcd.sdf ))
