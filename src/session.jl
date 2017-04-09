@@ -8,13 +8,13 @@ type Session
   filename::String
 end
 
-function Session(sessionId)
+function Session(sessionId, opts::Dict)
   # find an available port
   xport, sock = listenany(5000)
   close(sock)
   port = Int(xport)
 
-  chan = Channel{String}(10) # create Channel for message queue
+  chan = Channel{String}(100) # create Channel for message queue
 
   launchServer(chan, port) # launch communication server
   filename = createPage(sessionId, port)
@@ -25,7 +25,12 @@ function Session(sessionId)
   # root container has nid = 1 and no parent
   ct = Container(1, Nullable{Container}(), Dict{Symbol,Container}())
 
-  Session(chan, port, 1, ct, ct, filename)
+  ns = Session(chan, port, 1, ct, ct, filename)
+
+  # In case there are opts, send them to the root container
+  length(opts) > 1 && send(ns, 1, "clear", Dict(:deco=>opts))
+
+  ns
 end
 
 function getnid()
@@ -50,14 +55,14 @@ macro session(args...)
   println(sessionId)
 
   if sessionId in keys(sessions) # already opened, just clear the page
-    send(sessions[sessionId], 1, "clear", opts)
-
+    send(sessions[sessionId], 1, "clear", Dict(:deco=>opts))
   else # create page, launch server, etc.
-    ns = Session(sessionId)
+    ns = Session(sessionId, opts)
     sessions[sessionId] = ns
     isDisplayed && openBrowser(ns.filename)
   end
   currentSession = sessions[sessionId]
+  nothing
 end
 
 function launchServer(chan::Channel, port::Int)

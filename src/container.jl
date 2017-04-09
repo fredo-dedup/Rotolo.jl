@@ -10,10 +10,10 @@ function Container(parent::Container, opts::Dict=Dict())
   nid = getnid()
   nct = Container(nid, Nullable(parent), Dict{Symbol,Container}())
 
-  args = merge(opts,
-               Dict(:newnid => nid,
-                    :compname => "html-node",
-                    :params => Dict(:html=>"")))
+  args = Dict(:newnid   => nid,
+              :compname => "html-node",
+              :params   => Dict(:html=>""),
+              :deco     => opts)
 
   send(currentSession, parent.nid, "append", args)
   nct
@@ -27,7 +27,7 @@ function findorcreate(ct::Container, path::Vector{Symbol},
   if length(path) == index # we are at the leaf container
     if haskey(ct.subcontainers, nn) # container exists => clear
       nct = ct.subcontainers[nn]
-      send(currentSession, nct.nid, "clear", opts)
+      send(currentSession, nct.nid, "clear", Dict(:deco=>opts))
     else  # no container with this name => create
       nct = Container(ct, opts) # apply opts only on leaf
       ct.subcontainers[nn] = nct
@@ -53,4 +53,5 @@ macro container(args...)
   # create or clear container identified by its path in `name`
   nct = findorcreate(currentSession.root_container, name, 1, opts)
   currentSession.active_container = nct
+  nothing
 end

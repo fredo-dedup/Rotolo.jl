@@ -20,10 +20,10 @@ function showmsg(obj::Any, opts::Dict=Dict())
     error("no show function found for type $(typeof(obj))")
   end
 
-  args = merge(opts,
-               Dict(:newnid => getnid(),
-                    :compname => "html-node",
-                    :params => Dict(:html => takebuf_string(buf))))
+  args = Dict(:newnid   => getnid(),
+              :compname => "html-node",
+              :params   => Dict(:html => takebuf_string(buf)),
+              :deco     => opts)
 
   sendcurrent("append", args)
   nothing

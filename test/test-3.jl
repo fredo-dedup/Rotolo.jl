@@ -1,3 +1,24 @@
+
+reload("Rotolo")
+using PhantomJS
+
+include("../src/compile.jl")
+
+compile(joinpath(dirname(@__FILE__), "../test/dummy-page.jl"),
+        "/tmp/dummy.pdf")
+
+module Try
+end
+
+module Try
+
+Main.compile(joinpath(dirname(@__FILE__), "../test/dummy-page.jl"),
+        "/tmp/dummy.pdf")
+
+
+end
+
+
 reload("Rotolo")
 
 module Try

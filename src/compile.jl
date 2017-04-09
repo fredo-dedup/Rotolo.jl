@@ -2,17 +2,27 @@
 #   Compilation function : compile()
 ############################################################################
 
-compile(filepath::AbstractString) = open(compile, filepath, "r")
+function compile(sourcepath::String,
+                 destpath::String)
+  open(sourcepath, "r") do sio
+    open(destpath, "w") do dio
+      compile(sio, dio)
+    end
+  end
+end
 
-function compile(sio::IO)
+function compile(sio::IO, dio::IO)
   emod = Module(gensym())
+
+  eval(emod, :( using Rotolo ))
+  eval(emod.Rotolo, :( isDisplayed = false ))
 
   hit_eof = false
   counter = 0
+  outputbuf = UInt8[]
   while true
       line = ""
       ast = nothing
-      interrupted = false
       while true
           try
               line *= readline(sio)
@@ -32,15 +42,24 @@ function compile(sio::IO)
           ret = try
                   eval(emod, ast)
                 catch err
-                  println("\nerror encountered at line $counter : ")
+                  println("\nerror encountered at line $counter in $ast")
                   rethrow()
                 end
           # println(ret)
-          ret != nothing &&
-            emod.isdefined(:Paper) &&
-            emod.isrewired(typeof(ret)) &&
-            emod.Paper.Redisplay.render(emod.Paper.Redisplay.md, ret)
+          if ret != nothing && emod.isdefined(:Rotolo)
+            println(ret)
+            if isa(ret, emod.Rotolo.Session)  # session has just been defined
+              oio = open(ret.filename)
+              @async outputbuf = renderhtml(oio, format="pdf")
+            else
+              
+              emod.display(ret)
+            end
+          end
       end
-      ((!interrupted && isempty(line)) || hit_eof) && break
+      hit_eof && break
   end
+
+  write(dio, outputbuf)
+  eval(emod.Rotolo, :(isDisplayed = true))
 end
