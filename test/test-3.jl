@@ -29,12 +29,18 @@ using Rotolo
 
 using Base.Markdown
 
-@redirect Float32 Base.Markdown.MD
 
-Rotolo.sessions
+@redirect Float32 Base.Markdown.MD
 
 @session d1
 
+Rotolo.send(Rotolo.currentSession, 0, "load",
+            Dict(:assetname => "katex",
+                 :assetpath => "D:/frtestar/.julia/v0.5/Rotolo/client/katex/katex.js"))
+
+@redirect Rotolo.Katex
+
+Rotolo.Katex("c = \\pm\\sqrt{a^2 + b^2}", true)
 
 Float32(45)
 "abcd" |> Rotolo.style("background-color:lightpink")

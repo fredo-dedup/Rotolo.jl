@@ -17,6 +17,8 @@ include("showmsg.jl")
 
 @require Atom include("atom_integration.jl")
 
+include("katex.jl")
+
 global currentSession
 global isDisplayed = true
 global sessions = Dict{String, Session}()
