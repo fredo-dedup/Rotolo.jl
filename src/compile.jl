@@ -14,52 +14,55 @@ end
 function compile(sio::IO, dio::IO)
   emod = Module(gensym())
 
-  eval(emod, :( using Rotolo ))
-  eval(emod.Rotolo, :( isDisplayed = false ))
+  Rotolo.headless(true)
+  println("isHeadless ", Rotolo.isHeadless)
 
   hit_eof = false
   counter = 0
   outputbuf = UInt8[]
   while true
-      line = ""
-      ast = nothing
-      while true
-          try
-              line *= readline(sio)
-              counter += 1
-          catch e
-              if isa(e,EOFError)
-                  hit_eof = true
-                  break
-              else
-                  rethrow()
-              end
+    line = ""
+    ast = nothing
+    while true
+      try
+          line *= readline(sio)
+          counter += 1
+      catch e
+          if isa(e,EOFError)
+              hit_eof = true
+              break
+          else
+              rethrow()
           end
-          ast = Base.parse_input_line(line)
-          (isa(ast,Expr) && ast.head == :incomplete) || break
       end
-      if !isempty(line)
-          ret = try
-                  eval(emod, ast)
-                catch err
-                  println("\nerror encountered at line $counter in $ast")
-                  rethrow()
-                end
-          # println(ret)
-          if ret != nothing && emod.isdefined(:Rotolo)
-            println(ret)
-            if isa(ret, emod.Rotolo.Session)  # session has just been defined
-              oio = open(ret.filename)
-              @async outputbuf = renderhtml(oio, format="pdf")
-            else
-              
-              emod.display(ret)
+      ast = Base.parse_input_line(line)
+      (isa(ast,Expr) && ast.head == :incomplete) || break
+    end
+    if !isempty(line)
+      println("line : $line")
+      ret = try
+              eval(emod, ast)
+            catch err
+              println("\nerror encountered in line #$counter : $line")
+              rethrow()
             end
-          end
+      if ret != nothing
+        println("value : $ret")
+        if isa(ret, Session)  # session has just been defined
+          println("filename = ", ret.filename)
+          sleep(3)
+          oio = open(ret.filename)
+          @async outputbuf = PhantomJS.renderhtml(oio, format="pdf")
+          sleep(10)
+        elseif isredirected(typeof(ret))
+          println("showing ret ($(typeof(ret)))")
+          Rotolo.showmsg(ret)
+        end
       end
-      hit_eof && break
+    end
+    (isempty(line) || hit_eof) && break
   end
 
   write(dio, outputbuf)
-  eval(emod.Rotolo, :(isDisplayed = true))
+  eval(emod, :( Rotolo.headless(false) ))
 end

@@ -2,27 +2,33 @@ using Rotolo
 using Base.Markdown
 using Gadfly
 
-@redirect Markdown.MD Gadfly.Plot HTML
+global_theme = """
+	text-align: justify;
+	border-style:solid;
+	padding: 5px
+"""
 
-@session Himmelblau
+@session Himmelblau global_theme
+@redirect Markdown.MD HTML Katex
 
-@container header
+@container header style=>"text-align: center;"
 
 md"# Himmelblau's function"
+@style md"*From Wikipedia, the free encyclopedia*" style=>"font-size:x-small"
 
-@container main style=>"display:flex;flex-direction:row"
+@container main style=>"display:flex;flex-direction:row;text-align: justify;"
 
 @container main.desc style=>"display:flex;flex-direction:column"
 
 md"### Definition"
-md"*From Wikipedia, the free encyclopedia*"
 
 md"""
 	In mathematical optimization, Himmelblau's function is a multi-modal function,
 	used to test the performance of optimization algorithms. The function is defined by:
 	"""
 
-tex("f(x,y)=(x^2+y-11)^2+(x+y^2-7)^2") |> vbox |> packacross(center)
+Katex("f(x,y)=(x^2+y-11)^2+(x+y^2-7)^2", true)
+
 
 md"""
 	It has one local maximum at x = -0.270845 and y = -0.923039,
@@ -52,7 +58,7 @@ p = plot(z=f, x=linspace(-5,5,150), y=linspace(-5,5,150),
 	 	     Geom.contour(levels=logspace(0,3,15) - 1),
 		     white_panel);
 
-set_default_plot_size(300*Gadfly.px, 300*Gadfly.px)
+set_default_plot_size(450*Gadfly.px, 450*Gadfly.px)
 HTML(stringmime("text/html", p))
 
 @style md"This is a Graph of *Himmelblau*'s function" style=>"font-size:small"

@@ -1,20 +1,22 @@
 
 reload("Rotolo")
-using PhantomJS
-
-include("../src/compile.jl")
-
-compile(joinpath(dirname(@__FILE__), "../test/dummy-page.jl"),
-        "/tmp/dummy.pdf")
 
 module Try
 end
 
 module Try
+using Rotolo
 
-Main.compile(joinpath(dirname(@__FILE__), "../test/dummy-page.jl"),
-        "/tmp/dummy.pdf")
+compile(joinpath(dirname(@__FILE__), "../test/dummy-page.jl"),
+        "c:/temp/dummy.pdf")
 
+Rotolo.isHeadless
+
+Rotolo.currentSession
+isredirected(String)
+String in Rotolo.currentSession.redirected_types
+
+headless()
 
 end
 
@@ -40,7 +42,7 @@ Rotolo.send(Rotolo.currentSession, 0, "load",
 
 @redirect Rotolo.Katex
 
-Rotolo.Katex("c = \\pm\\sqrt{a^2 + b^2}", true)
+Katex("c = \\pm\\sqrt{a^2 + b^2}", true)
 
 Float32(45)
 "abcd" |> Rotolo.style("background-color:lightpink")

@@ -28,6 +28,7 @@ function findorcreate(ct::Container, path::Vector{Symbol},
     if haskey(ct.subcontainers, nn) # container exists => clear
       nct = ct.subcontainers[nn]
       send(currentSession, nct.nid, "clear", Dict(:deco=>opts))
+      nct.subcontainers = Dict{Symbol,Container}()
     else  # no container with this name => create
       nct = Container(ct, opts) # apply opts only on leaf
       ct.subcontainers[nn] = nct

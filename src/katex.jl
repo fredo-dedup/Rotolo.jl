@@ -7,15 +7,6 @@ end
 Katex(ex::String) = Katex(ex, false)
 
 function showmsg(obj::Katex, opts::Dict=Dict())
-  buf = IOBuffer()
-  if method_exists(show, (IO, MIME"text/html", typeof(obj)))
-    show(buf, MIME"text/html"(), obj)
-  elseif method_exists(show, (IO, MIME"text/plain", typeof(obj)))
-    show(buf, MIME"text/plain"(), obj)
-  else
-    error("no show function found for type $(typeof(obj))")
-  end
-
   args = Dict(:newnid   => getnid(),
               :compname => "katex",
               :params   => Dict(:expr => obj.val,
@@ -26,4 +17,12 @@ function showmsg(obj::Katex, opts::Dict=Dict())
   nothing
 end
 
-@redirect Katex
+function loadmsg(::Type{Katex})
+  comppath = joinpath(dirname(@__FILE__), "../client/katex/katex.js")
+  send(currentSession, 0,
+       "load",
+       Dict{Symbol,Any}(:assetname => "katex",
+   		                  :assetpath => compath))
+end
+
+export Katex

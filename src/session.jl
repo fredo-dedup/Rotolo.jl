@@ -6,6 +6,7 @@ type Session
   root_container::Container
   active_container::Container
   filename::String
+  redirected_types::Set{DataType}
 end
 
 function Session(sessionId, opts::Dict)
@@ -14,7 +15,7 @@ function Session(sessionId, opts::Dict)
   close(sock)
   port = Int(xport)
 
-  chan = Channel{String}(100) # create Channel for message queue
+  chan = Channel{String}(100) # Channel for message queue
 
   launchServer(chan, port) # launch communication server
   filename = createPage(sessionId, port)
@@ -22,10 +23,10 @@ function Session(sessionId, opts::Dict)
   # Since container #1 already exists in the Vuejs client, no need to send
   # message to create the web component. Hence the Container constructor function
   # should not be called, only the plain type constructor.
-  # root container has nid = 1 and no parent
+  # Root container has nid = 1 and no parent
   ct = Container(1, Nullable{Container}(), Dict{Symbol,Container}())
 
-  ns = Session(chan, port, 1, ct, ct, filename)
+  ns = Session(chan, port, 1, ct, ct, filename, Set{DataType}())
 
   # In case there are opts, send them to the root container
   length(opts) > 1 && send(ns, 1, "clear", Dict(:deco=>opts))
@@ -38,6 +39,7 @@ function getnid()
   currentSession.nid_counter
 end
 
+isredirected(t::Type) = t in currentSession.redirected_types
 
 macro session(args...)
   global currentSession
@@ -55,14 +57,15 @@ macro session(args...)
   println(sessionId)
 
   if sessionId in keys(sessions) # already opened, just clear the page
-    send(sessions[sessionId], 1, "clear", Dict(:deco=>opts))
+    s = sessions[sessionId]
+    send(s, 1, "clear", Dict(:deco=>opts))
+    s.root_container.subcontainers = Dict{Symbol,Container}()
   else # create page, launch server, etc.
     ns = Session(sessionId, opts)
     sessions[sessionId] = ns
-    isDisplayed && openBrowser(ns.filename)
+    isHeadless || openBrowser(ns.filename)
   end
   currentSession = sessions[sessionId]
-  nothing
 end
 
 function launchServer(chan::Channel, port::Int)
@@ -88,13 +91,12 @@ function createPage(sname::String, port::Int)
   sid = tempname()
   tmppath = string(sid, ".html")
   scriptpath = joinpath(dirname(@__FILE__), "../client/build.js")
-  # scriptpath = "D:/frtestar/devl/paper-client/dist/build.js"
-  # scriptpath = "/home/fred/Documents/Dropbox/devls/paper-client/dist/build.js"
   requirepath = joinpath(dirname(@__FILE__), "../client/require.js")
 
   open(tmppath, "w") do io
     println(io,
       """
+      <!doctype html>
       <html>
         <head>
           <title>$sname</title>

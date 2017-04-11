@@ -1,11 +1,14 @@
 using Rotolo
 
-@session test
+@session test style=>"color:red"
 @redirect String
 "red"
 
-@session test style=>"color:red"
-"red"
+Rotolo.sendcurrent("append",
+          Dict(:newnid   => getnid(),
+               :compname => "html-node",
+               :params   => Dict(:html => "abcd"),
+               :deco     => Dict() ) )
 
 @container red class=>"redbox" style=>"color:red"
 "red"

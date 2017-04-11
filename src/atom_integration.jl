@@ -16,14 +16,20 @@ import Media: render
 
 # redefinition of 'redirect'
 macro redirect(args...)
+  isdefined(Rotolo, :currentSession) ||
+    error("A session needs to be created before calling @redirect")
+
   for a in args
     t = try
-          Main.eval(a)
+          eval(current_module(), a)
         catch e
           error("can't evaluate $a, error $e")
         end
     isa(t, Type) || error("$a does not evaluate to a type")
 
+    push!(currentSession.redirected_types, t)
+    loadmsg(t)
+    
     @eval function Media.render(e::Atom.Editor, x::($t))
         Media.render(e, nothing)
         showmsg(x)
