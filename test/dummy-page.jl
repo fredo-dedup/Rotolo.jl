@@ -4,12 +4,6 @@ using Rotolo
 @redirect String
 "red"
 
-Rotolo.sendcurrent("append",
-          Dict(:newnid   => getnid(),
-               :compname => "html-node",
-               :params   => Dict(:html => "abcd"),
-               :deco     => Dict() ) )
-
 @container red class=>"redbox" style=>"color:red"
 "red"
 @container red id=>"test" class=>"bluebox" style=>"color:blue"

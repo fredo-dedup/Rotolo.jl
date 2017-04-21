@@ -4,21 +4,132 @@ reload("Rotolo")
 module Try
 end
 
+
 module Try
 using Rotolo
 
 compile(joinpath(dirname(@__FILE__), "../test/dummy-page.jl"),
         "c:/temp/dummy.pdf")
 
-Rotolo.isHeadless
 
-Rotolo.currentSession
-isredirected(String)
-String in Rotolo.currentSession.redirected_types
+compile(joinpath(dirname(@__FILE__), "../examples/Himmelblau.jl"),
+        "c:/temp/dummy3.pdf")
 
-headless()
 
+"abcd"
+
+
+phantomjspath = joinpath(Pkg.dir("PhantomJS"), "deps/usr/bin/phantomjs")
+
+function renderhtml(source::IO;
+                   format::String="png",
+                   width::Int=1024,
+                   height::Int=800,
+                   clipToSelector::String="",
+                   quality::Int=75,
+                   paperSize::String="A4",
+                   orientation::String="portrait",
+                   margin::Union{String, Int}=0,
+                   background::String="white")
+
+ local result
+
+ mktempdir() do tdir
+   htmlpath = joinpath(tdir, randstring() * ".html")
+   open(io -> write(io, read(source)), htmlpath, "w")
+   htmlpath = replace(htmlpath, "\\", "/")
+
+   destpath = joinpath(tdir, randstring() * ".png")
+   destpath = replace(destpath, "\\", "/")
+
+   bgjs = background == "transparent" ? "" :
+            """page.evaluate(function() {
+                 document.body.bgColor = '$background';
+               });
+            """
+
+   clipjs = clipToSelector == "" ? "" :
+              """
+               var clipRect = page.evaluate(function(){
+                   return document.querySelector('$clipToSelector').getBoundingClientRect();
+                 });
+
+               page.clipRect = {
+                 top:    clipRect.top,
+                 left:   clipRect.left,
+                 width:  clipRect.width,
+                 height: clipRect.height
+               };
+              """
+
+   jsscript = """
+     "use strict";
+     var page = require('webpage').create(),
+         system = require('system'),
+         address, output, size, pageWidth, pageHeight;
+
+     address = 'file:///$htmlpath';
+     output = '$destpath';
+
+     page.viewportSize = { width: $width, height: $height };
+
+     page.paperSize = { format: '$paperSize',
+                        orientation: '$orientation',
+                        margin: '$margin' };
+
+     page.onConsoleMessage = function(msg, lineNum, sourceId) {
+       console.log('CONSOLE: ' + msg);
+     };
+
+     page.onError = function(msg, trace) {
+       console.log('ERROR : ' + msg);
+     };
+
+
+     page.open(address, function (status) {
+         if (status !== 'success') {
+             console.log('Unable to load the address : ' + address);
+             phantom.exit(1);
+         } else {
+             console.log('reading : ' + address);
+             window.setTimeout(function () {
+                 console.log('now rendering ');
+                 $bgjs
+                 $clipjs
+                 page.render(output,
+                             {format: '$format',
+                              quality: '$quality'});
+                 console.log('rendering done');
+                 phantom.exit();
+             }, 2000);
+         }
+     });
+   """
+
+   jspath = joinpath(tdir, randstring() * ".js")
+   open(io -> write(io, jsscript), jspath, "w")
+
+   run(`$phantomjspath $jspath`)
+   result = read(destpath)
+ end
+
+ result
 end
+
+
+
+fn = "C:/Users/frtestar/AppData/Local/Temp/jl_6DE1.tmp.html"
+fn = "C:/temp/test.html"
+fn = "C:/temp/test2.html"
+sio = open(fn, "r")
+pdfbuf = renderhtml(sio, format="pdf")
+open(pdfio -> write(pdfio, pdfbuf), "c:/temp/test3.pdf", "w")
+close(sio)
+
+
+
+
+##################################################
 
 
 reload("Rotolo")

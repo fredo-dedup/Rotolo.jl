@@ -78,3 +78,10 @@ function send(session::Session, nid::Int,
 
   put!(session.channel, JSON.json(msg))
 end
+
+
+function htmlpath(path::String)
+  npath = normpath(path)
+  npath = replace(npath, "\\", "/")
+  "file:///" * npath
+end

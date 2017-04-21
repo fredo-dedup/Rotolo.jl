@@ -39,7 +39,8 @@ function getnid()
   currentSession.nid_counter
 end
 
-isredirected(t::Type) = t in currentSession.redirected_types
+isredirected(t::Type) = isdefined(Rotolo, :currentSession) &&
+  t in currentSession.redirected_types
 
 macro session(args...)
   global currentSession
@@ -71,7 +72,9 @@ end
 function launchServer(chan::Channel, port::Int)
   wsh = WebSocketHandler() do req,client
     for m in chan
-      println("sending $m")  # msg = read(client)
+      sm = "$m"
+      sm = length(sm) > 200 ? sm[1:200]*"..." : sm
+      println("sending $sm")  # msg = read(client)
       write(client, m)
     end
     println("exiting send loop for port $port")
@@ -90,8 +93,8 @@ end
 function createPage(sname::String, port::Int)
   sid = tempname()
   tmppath = string(sid, ".html")
-  scriptpath = joinpath(dirname(@__FILE__), "../client/build.js")
-  requirepath = joinpath(dirname(@__FILE__), "../client/require.js")
+  scriptpath = htmlpath(joinpath(dirname(@__FILE__), "../client/build.js"))
+  requirepath = htmlpath(joinpath(dirname(@__FILE__), "../client/require.js"))
 
   open(tmppath, "w") do io
     println(io,
@@ -114,6 +117,7 @@ function createPage(sname::String, port::Int)
 
   tmppath
 end
+
 
 function openBrowser(pagePath::String)
   @static if VERSION < v"0.5.0-"
