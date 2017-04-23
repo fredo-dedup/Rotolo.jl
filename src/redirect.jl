@@ -5,7 +5,7 @@ type RotoloDisplay <: Display ; end
 pushdisplay(RotoloDisplay())
 
 macro redirect(args...)
-  isdefined(Rotolo, :currentSession) ||
+  currentSession == nothing && 
     error("A session needs to be created before calling @redirect")
 
   for a in args
@@ -18,7 +18,7 @@ macro redirect(args...)
 
     push!(currentSession.redirected_types, t)
     loadmsg(t)
-    
+
     @eval display(::RotoloDisplay, x::($t)) = showmsg(x)
   end
   nothing

@@ -22,7 +22,7 @@ function loadmsg(::Type{Katex})
   send(currentSession, 0,
        "load",
        Dict{Symbol,Any}(:assetname => "katex",
-   		                  :assetpath => htmlpath(comppath)))
+   		                  :assetpath => comppath))
 end
 
 export Katex

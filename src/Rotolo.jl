@@ -21,7 +21,7 @@ include("compile.jl")
 
 include("katex.jl")
 
-global currentSession
+global currentSession = nothing
 global sessions = Dict{String, Session}()
 
 global isHeadless = false

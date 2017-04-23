@@ -17,7 +17,6 @@ function compile(sio::IO, destpath::String)
   emod = Module(gensym())
 
   Rotolo.headless(true)
-  println("isHeadless ", Rotolo.isHeadless)
 
   hit_eof = false
   counter = 0
@@ -42,9 +41,7 @@ function compile(sio::IO, destpath::String)
       (isa(ast,Expr) && ast.head == :incomplete) || break
     end
     if !isempty(line)
-      sl = chomp("$line")
-      sl = length(sl)>200 ? sl[1:200]*"..." : sl
-      println("line #$counter : $sl")
+      # limited_println("line #$counter : $line")
       ret = try
               eval(emod, ast)
             catch err
@@ -52,12 +49,12 @@ function compile(sio::IO, destpath::String)
               rethrow()
             end
       if ret != nothing
-        println("value : $ret")
+        # limited_println("value : $ret")
         if isa(ret, Session)  # session has just been defined
           println("filename = ", ret.filename)
           headlessclient(ret.filename, destpath, format="pdf")
         elseif isredirected(typeof(ret))
-          println("showing ret ($(typeof(ret)))")
+          # println("showing ret ($(typeof(ret)))")
           Rotolo.showmsg(ret)
         end
       end
@@ -74,6 +71,7 @@ function compile(sio::IO, destpath::String)
   # end
 
   Rotolo.headless(false)
+  Rotolo.endsession()
 end
 
 
@@ -151,7 +149,7 @@ function headlessclient(srcpath::String,
         }
     });
   """
-  println(jsscript)
+  # println(jsscript)
   @async PhantomJS.execjs(jsscript)
 
   nothing

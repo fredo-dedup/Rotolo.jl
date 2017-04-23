@@ -6,10 +6,11 @@ global_theme = """
 	text-align: justify;
 	border-style:solid;
 	padding: 5px
-"""
+  """
 
 @session Himmelblau global_theme
 @redirect Markdown.MD HTML Katex
+sleep(3)
 
 @container header style=>"text-align: center;"
 

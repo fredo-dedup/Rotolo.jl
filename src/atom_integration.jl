@@ -16,7 +16,7 @@ import Media: render
 
 # redefinition of 'redirect'
 macro redirect(args...)
-  isdefined(Rotolo, :currentSession) ||
+  currentSession == nothing && 
     error("A session needs to be created before calling @redirect")
 
   for a in args
@@ -29,7 +29,7 @@ macro redirect(args...)
 
     push!(currentSession.redirected_types, t)
     loadmsg(t)
-    
+
     @eval function Media.render(e::Atom.Editor, x::($t))
         Media.render(e, nothing)
         showmsg(x)

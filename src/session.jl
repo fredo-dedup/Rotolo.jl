@@ -2,6 +2,8 @@
 type Session
   channel::Channel{String}
   port::Int
+  name::String
+  server::Server
   nid_counter::Int
   root_container::Container
   active_container::Container
@@ -15,9 +17,9 @@ function Session(sessionId, opts::Dict)
   close(sock)
   port = Int(xport)
 
-  chan = Channel{String}(100) # Channel for message queue
+  chan = Channel{String}(1000) # Channel for message queue
 
-  launchServer(chan, port) # launch communication server
+  server = launchServer(chan, port) # launch communication server
   filename = createPage(sessionId, port)
 
   # Since container #1 already exists in the Vuejs client, no need to send
@@ -26,7 +28,7 @@ function Session(sessionId, opts::Dict)
   # Root container has nid = 1 and no parent
   ct = Container(1, Nullable{Container}(), Dict{Symbol,Container}())
 
-  ns = Session(chan, port, 1, ct, ct, filename, Set{DataType}())
+  ns = Session(chan, port, sessionId, server, 1, ct, ct, filename, Set{DataType}())
 
   # In case there are opts, send them to the root container
   length(opts) > 1 && send(ns, 1, "clear", Dict(:deco=>opts))
@@ -34,12 +36,25 @@ function Session(sessionId, opts::Dict)
   ns
 end
 
+function endsession()
+  global currentSession
+  currentSession == nothing && return
+
+  close(currentSession.server)
+  close(currentSession.channel)
+  isfile(currentSession.filename) && rm(currentSession.filename)
+  ## TODO remove redirected types
+  delete!(sessions, currentSession.name)
+  currentSession = nothing
+end
+
+
 function getnid()
   currentSession.nid_counter += 1
   currentSession.nid_counter
 end
 
-isredirected(t::Type) = isdefined(Rotolo, :currentSession) &&
+isredirected(t::Type) = currentSession != nothing &&
   t in currentSession.redirected_types
 
 macro session(args...)
@@ -72,9 +87,7 @@ end
 function launchServer(chan::Channel, port::Int)
   wsh = WebSocketHandler() do req,client
     for m in chan
-      sm = "$m"
-      sm = length(sm) > 200 ? sm[1:200]*"..." : sm
-      println("sending $sm")  # msg = read(client)
+      limited_println("sending $m")
       write(client, m)
     end
     println("exiting send loop for port $port")
@@ -87,7 +100,9 @@ function launchServer(chan::Channel, port::Int)
     rsp
   end
 
-  @async run(Server(handler, wsh), port)
+  server = Server(handler, wsh)
+  @async run(server, port)
+  server
 end
 
 function createPage(sname::String, port::Int)

@@ -63,7 +63,7 @@ end
 
 
 function sendcurrent(command::String, args::Dict=Dict())
-  isdefined(Rotolo, :currentSession) || error("[send] no active session")
+  currentSession == nothing && error("[send] no active session")
 
   send(currentSession,
        currentSession.active_container.nid,
@@ -83,5 +83,11 @@ end
 function htmlpath(path::String)
   npath = normpath(path)
   npath = replace(npath, "\\", "/")
-  "file:///" * npath
+  "file://" * npath
+end
+
+function limited_println(ln::String)
+  sl = chomp(ln)
+  sl = length(sl)>200 ? sl[1:200]*"..." : sl
+  println(sl)
 end
