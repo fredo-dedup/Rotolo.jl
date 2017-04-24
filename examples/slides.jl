@@ -5,27 +5,29 @@ global_theme = """
 	text-align: center;
 	border-style:solid;
 	padding: 5px;
-
-	@media print {
-    .slide {page-break-before: always;}
-  }
-
-  """
+	div{page-break-before: always;}
+	"""
 
 
+
+.markdown { font-size:x-large }
+
+
+Rotolo.endsession()
 @session Slides style=>global_theme
 
 @redirect Markdown.MD Katex
-sleep(3)
 
 @container slide1 class=>"slide"
 
 md"# Himmelblau's function"
 @style md"*From Wikipedia, the free encyclopedia*" style=>"font-size:x-small"
 
-@container slide2 class=>"slide"
+@container slide2 class=>"slide" style=>"page-break-before: always;"
 
 md"# Function definition"
 Katex("f(x,y)=(x^2+y-11)^2+(x+y^2-7)^2", true)
 
 @container slide3 class=>"slide"
+
+md"# Whatever"

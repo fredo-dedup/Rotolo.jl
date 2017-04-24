@@ -23,6 +23,7 @@ function loadmsg(::Type{Katex})
        "load",
        Dict{Symbol,Any}(:assetname => "katex",
    		                  :assetpath => comppath))
+  sleep(3) # give time to load
 end
 
 export Katex

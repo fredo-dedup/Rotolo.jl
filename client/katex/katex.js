@@ -9,7 +9,7 @@ define(["./katex.min.js"],
 
     return {
 
-      props: ['params', 'nid'],
+      props: ['params', 'nid', 'deco'],
 
       render: function(createElement) {
         var html = katex.renderToString(this.params.expr,
