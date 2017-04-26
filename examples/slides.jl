@@ -3,31 +3,35 @@ using Base.Markdown
 
 global_theme = """
 	text-align: center;
-	border-style:solid;
 	padding: 5px;
-	div{page-break-before: always;}
+	.slide {page-break-before: always;}
+	.markdown {font-size: x-large;}
+	h1 {font-size: 20mm;text-align: center;background-color: lightblue;}
 	"""
 
 
+@session Slides
+@redirect Markdown.MD HTML Katex
 
-.markdown { font-size:x-large }
+HTML("<style>$global_theme</style>")
 
-
-Rotolo.endsession()
-@session Slides style=>global_theme
-
-@redirect Markdown.MD Katex
-
-@container slide1 class=>"slide"
-
-md"# Himmelblau's function"
+@container slide0 class=>"slide"
+md"## Himmelblau's function"
 @style md"*From Wikipedia, the free encyclopedia*" style=>"font-size:x-small"
 
-@container slide2 class=>"slide" style=>"page-break-before: always;"
 
-md"# Function definition"
+@container slide1 class=>"slide"
+md"# Introduction"
+
+md"""
+	In mathematical optimization, Himmelblau's function is a multi-modal function,
+	used to test the performance of optimization algorithms. The function is defined by:
+	"""
+
+
+@container slide2 class=>"slide"
+md"# Definition"
+
+md"# Himmelblau's function"
+
 Katex("f(x,y)=(x^2+y-11)^2+(x+y^2-7)^2", true)
-
-@container slide3 class=>"slide"
-
-md"# Whatever"

@@ -13,10 +13,10 @@ compile(joinpath(dirname(@__FILE__), "../test/dummy-page.jl"),
 
 
 compile(joinpath(dirname(@__FILE__), "../examples/Himmelblau.jl"),
-        "c:/temp/dummy3.pdf")
+        "c:/temp/Himmelblau.pdf")
 
-
-"abcd"
+compile(joinpath(dirname(@__FILE__), "../examples/slides.jl"),
+        "c:/temp/slides.pdf")
 
 
 phantomjspath = joinpath(Pkg.dir("PhantomJS"), "deps/usr/bin/phantomjs")
