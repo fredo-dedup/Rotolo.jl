@@ -83,7 +83,7 @@ end
 function htmlpath(path::String)
   npath = normpath(path)
   npath = replace(npath, "\\", "/")
-  "file://" * npath
+  "file:///" * npath
 end
 
 function limited_println(ln::String)

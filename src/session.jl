@@ -87,7 +87,7 @@ end
 function launchServer(chan::Channel, port::Int)
   wsh = WebSocketHandler() do req,client
     for m in chan
-      limited_println("sending $m")
+      # limited_println("sending $m")
       write(client, m)
     end
     println("exiting send loop for port $port")

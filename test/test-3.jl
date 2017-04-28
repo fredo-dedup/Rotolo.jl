@@ -11,13 +11,14 @@ using Rotolo
 compile(joinpath(dirname(@__FILE__), "../test/dummy-page.jl"),
         "c:/temp/dummy.pdf")
 
-
 compile(joinpath(dirname(@__FILE__), "../examples/Himmelblau.jl"),
         "c:/temp/Himmelblau.pdf")
 
-compile(joinpath(dirname(@__FILE__), "../examples/slides.jl"),
-        "c:/temp/slides.pdf")
+jlsrc = normpath(joinpath(dirname(@__FILE__), "../examples/slides.jl"))
+compile(jlsrc, "c:/temp/slides.pdf")
 
+Rotolo.sessions
+Rotolo.currentSession
 
 phantomjspath = joinpath(Pkg.dir("PhantomJS"), "deps/usr/bin/phantomjs")
 
