@@ -3,7 +3,7 @@ module Rotolo
 
 using HttpServer, WebSockets
 using Requires
-using PhantomJS
+import HeadlessChromium
 
 import JSON
 
@@ -15,11 +15,16 @@ include("container.jl")
 include("session.jl")
 include("utils.jl")
 include("messaging.jl")
-include("compile.jl")
+# include("compile.jl")
 
 @require Atom include("atom_integration.jl")
 
-include("katex.jl")
+
+### plugins = objects in documents with add-hoc web components and behaviour
+include("plugins/katex.jl")
+
+
+
 
 global currentSession = nothing
 global sessions = Dict{String, Session}()

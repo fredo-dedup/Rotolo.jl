@@ -18,7 +18,7 @@ function showmsg(obj::Katex, opts::Dict=Dict())
 end
 
 function loadmsg(::Type{Katex})
-  comppath = joinpath(dirname(@__FILE__), "../client/katex/katex.js")
+  comppath = normpath(joinpath(@__DIR__, "../../client/katex/katex.js"))
   send(currentSession, 0,
        "load",
        Dict{Symbol,Any}(:assetname => "katex",

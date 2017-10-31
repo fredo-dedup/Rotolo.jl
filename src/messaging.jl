@@ -22,7 +22,7 @@ function showmsg(obj::Any, opts::Dict=Dict())
 
   args = Dict(:newnid   => getnid(),
               :compname => "html-node",
-              :params   => Dict(:html => takebuf_string(buf)),
+              :params   => Dict(:html => String(take!(buf))),
               :deco     => opts)
 
   sendcurrent("append", args)

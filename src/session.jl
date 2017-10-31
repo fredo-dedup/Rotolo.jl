@@ -100,6 +100,9 @@ function launchServer(chan::Channel, port::Int)
     rsp
   end
 
+  handler.events["error"]  = (client, err) -> nothing
+  handler.events["listen"] = (port) -> nothing
+
   server = Server(handler, wsh)
   @async run(server, port)
   server
